@@ -1,6 +1,6 @@
 import cors from "@elysiajs/cors";
 import Elysia from "elysia";
-import { log } from "../logger";
+import { log, setUpLogger } from "../logger";
 import { Event, Filter, matchFilter, matchFilters } from "nostr-tools";
 import { ElysiaWS } from "elysia/dist/ws";
 import { version, name } from "../package.json";
@@ -45,15 +45,18 @@ const app = new Elysia()
     }  
 })
 .listen(3001)
-log.info`Relay listening on port ${3001}`
-if (PURGE_INTERVAL) {
-  log.info`Purging events every ${PURGE_INTERVAL} seconds`
-  setInterval(() => {
-    log.info`Purging [${events.length}] events`
-    purgeEvents = [...events]
-    events = []
-  }, PURGE_INTERVAL * 1000)
-}
+
+setUpLogger().then(()=> {
+  log.info`Relay listening on port ${3001}`
+  if (PURGE_INTERVAL) {
+    log.info`Purging events every ${PURGE_INTERVAL} seconds`
+    setInterval(() => {
+      log.info`Purging [${events.length}] events`
+      purgeEvents = [...events]
+      events = []
+    }, PURGE_INTERVAL * 1000)
+  }
+})
 class Socket {
   private _socket: ElysiaWS
   private _subs: Map<string, Filter[]>

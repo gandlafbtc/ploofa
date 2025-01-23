@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "bun build --compile --minify --sourcemap ./src/index.ts --outfile dist/ploofa",
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
