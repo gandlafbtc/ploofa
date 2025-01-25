@@ -4,7 +4,7 @@ import { log, setUpLogger } from "../logger";
 import { Event, Filter, matchFilter, matchFilters } from "nostr-tools";
 import { ElysiaWS } from "elysia/dist/ws";
 import { version, name } from "../package.json";
-const PURGE_INTERVAL = 120
+const PURGE_INTERVAL = 100
 let events: Event[] = []
 let persistentEvents: Event[] = []
 let purgeEvents: Event[] = []
@@ -58,6 +58,11 @@ setUpLogger().then(()=> {
       events = []
     }, PURGE_INTERVAL * 1000)
   }
+  setInterval(() => {
+    log.debug`events: [${events.length}]`
+    log.debug`purgeEvents: [${purgeEvents.length}]`
+    log.debug`persistEvents: [${persistentEvents.length}]`
+  }, 30000);
 })
 class Socket {
   private _socket: ElysiaWS
@@ -146,6 +151,7 @@ class Socket {
         persistentEvents.push(event)
       }
     }
+    
     else {
       events.push(event)
     }
