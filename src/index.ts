@@ -6,6 +6,7 @@ import { ElysiaWS } from "elysia/dist/ws";
 import { version, name } from "../package.json";
 const PURGE_INTERVAL = 120
 let events: Event[] = []
+let persistentEvents: Event[] = []
 let purgeEvents: Event[] = []
 let connections = new Map<string, Socket>()
 const app = new Elysia()
@@ -21,10 +22,11 @@ const app = new Elysia()
         icon: "",
         description: "Ploofa - Ephemeral relay",
         pubkey: "",
-        software: "https://github.com/",
+        software: "https://github.com/gandlafbtc/ploofa",
     }
 })
 .ws('/', {
+    idleTimeout: 240,
     open(ws) {
         log.info`Received new connection: ${ws.id}`
         const relay = new Socket(ws)
@@ -121,7 +123,7 @@ class Socket {
         log.debug`miss events due to limit=0 on subscription: ${subId}`
         continue
       }
-      for (const event of [...events, ...purgeEvents]) {
+      for (const event of [...events, ...purgeEvents,...persistentEvents]) {
         if ((limitCount??0) > 0 || limitCount == undefined) {
           if (matchFilter(filter, event)) {
             this.send(['EVENT', subId, event as unknown as string])
@@ -135,7 +137,18 @@ class Socket {
   }
   onEVENT(event: Event) {
     log.info('Event received: {event}', {event})
-    events.push(event)
+    if (event.kind===13194) {
+      const eventIndex = persistentEvents.findIndex((e)=>e.pubkey===event.pubkey)
+      if (eventIndex!==undefined) {
+        persistentEvents.splice(eventIndex, 1, event)
+      }
+      else {
+        persistentEvents.push(event)
+      }
+    }
+    else {
+      events.push(event)
+    }
     this.send(['OK', event.id, true as unknown as string, ""])
     for (const connection of connections.values()) {
       for (const [subId, filters] of connection.getSubs().entries()) {
