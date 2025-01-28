@@ -141,7 +141,7 @@ class Socket {
     this.send(['EOSE', subId])
   }
   onEVENT(event: Event) {
-    log.info('Event received: {event}', {event})
+    log.info('Event received: {event}', {event: event.id})
     if (event.kind===13194) {
       const eventIndex = persistentEvents.findIndex((e)=>e.pubkey===event.pubkey)
       if (eventIndex!==undefined) {

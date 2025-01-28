@@ -4,7 +4,7 @@ export const setUpLogger = async () => {
     await configure({
         sinks: { 
             console: getConsoleSink({formatter: ansiColorFormatter}),
-            file: getRotatingFileSink("app.log", {
+            file: getRotatingFileSink("data/app.log", {
                 maxSize: 0x400 * 0x400 * 5,
                 maxFiles: 5
             }),
